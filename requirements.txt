@@ -1,7 +1,15 @@
+diffusers==0.27.2
+accelerate==0.28.0
+#tensorflow==2.12.0
+#tensorboard==2.12.0
+opencv-python==4.9.0.80
+soundfile==0.12.1
+transformers==4.39.2
+
+
 torch-ema
 ninja
 trimesh
-opencv-python
 tensorboardX
 numpy 
 pandas
@@ -19,14 +27,12 @@ python_speech_features
 numba
 resampy
 #pyaudio
-soundfile
 einops
 configargparse
 
 lpips==0.1.3
 imageio-ffmpeg
 
-transformers
 edge_tts
 flask
 flask_sockets
@@ -36,8 +42,7 @@ aiohttp_cors
 
 ffmpeg-python
 omegaconf
-diffusers
-accelerate
+
 
 librosa
 openai
