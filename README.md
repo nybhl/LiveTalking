@@ -1,5 +1,31 @@
-## 1. Installation
+# Wav2Lip
+Tested with cuda 12.6, nvcc version 12.6
+```bash
+conda create -n wav2lip python=3.10
+conda activate wav2lip
+```
 
+Install torch 2.6.0 with nvcc 12.6
+```bash
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+```
+
+Test cuda is working
+```bash
+(wav2lip) root@DESKTOP-UJGQNR3:~# python -c "import torch; print(torch.__version__)"
+2.6.0+cu126
+(wav2lip) root@DESKTOP-UJGQNR3:~# python -c "import torch; print(torch.cuda.is_available())"
+True
+```
+
+Install requirements
+```
+pip install -r wave2lip_requirements.txt
+```
+
+
+# MuseTalk
+## 1. Installation
 Tested on Ubuntu 20.04, Python3.10, Pytorch 1.12 and CUDA 11.3
 
 ### 1.1 Install dependency
