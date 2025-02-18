@@ -34,7 +34,7 @@ python app.py --transport webrtc --model wav2lip --avatar_id wav2lip384_avatar1 
 Use browser to open http://serverip:8010/webrtcapi.html
 Click start.
 
-## Notes
+## Memory Constraints
 Tested on Nvidia GTX 1080 wave2lip uses 4.5GB VRAM in total with batch size 8. Batch size of 16 does not fit in 8GB VRAM
 
 ## Experiments
