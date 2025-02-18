@@ -124,9 +124,6 @@ def build_nerfreal(sessionid):
     elif opt.model == 'musetalk':
         from musereal import MuseReal
         nerfreal = MuseReal(opt,model,avatar)
-    elif opt.model == 'ernerf':
-        from nerfreal import NeRFReal
-        nerfreal = NeRFReal(opt,model,avatar)
     elif opt.model == 'ultralight':
         from lightreal import LightReal
         nerfreal = LightReal(opt,model,avatar)
@@ -437,7 +434,7 @@ if __name__ == '__main__':
     # parser.add_argument('--CHARACTER', type=str, default='test')
     # parser.add_argument('--EMOTION', type=str, default='default')
 
-    parser.add_argument('--model', type=str, default='ernerf') #musetalk wav2lip
+    parser.add_argument('--model', type=str, default='wav2lip') #musetalk wav2lip
 
     parser.add_argument('--transport', type=str, default='rtcpush') #rtmp webrtc rtcpush
     parser.add_argument('--push_url', type=str, default='http://localhost:1985/rtc/v1/whip/?app=live&stream=livestream') #rtmp://localhost/live/livestream
@@ -453,26 +450,12 @@ if __name__ == '__main__':
         with open(opt.customvideo_config,'r') as file:
             opt.customopt = json.load(file)
 
-    if opt.model == 'ernerf':       
-        from nerfreal import NeRFReal,load_model,load_avatar
-        model = load_model(opt)
-        avatar = load_avatar(opt) 
-        
-        # we still need test_loader to provide audio features for testing.
-        # for k in range(opt.max_session):
-        #     opt.sessionid=k
-        #     nerfreal = NeRFReal(opt, trainer, test_loader,audio_processor,audio_model)
-        #     nerfreals.append(nerfreal)
-    elif opt.model == 'musetalk':
+    if opt.model == 'musetalk':
         from musereal import MuseReal,load_model,load_avatar,warm_up
         print(opt)
         model = load_model()
         avatar = load_avatar(opt.avatar_id) 
         warm_up(opt.batch_size,model)      
-        # for k in range(opt.max_session):
-        #     opt.sessionid=k
-        #     nerfreal = MuseReal(opt,audio_processor,vae, unet, pe,timesteps)
-        #     nerfreals.append(nerfreal)
     elif opt.model == 'wav2lip':
         from lipreal import LipReal,load_model,load_avatar,warm_up
         print(opt)
