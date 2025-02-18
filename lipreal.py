@@ -55,17 +55,19 @@ def _load(checkpoint_path):
 	return checkpoint
 
 def load_model(path):
-	model = Wav2Lip()
-	print("Load checkpoint from: {}".format(path))
-	checkpoint = _load(path)
-	s = checkpoint["state_dict"]
-	new_s = {}
-	for k, v in s.items():
-		new_s[k.replace('module.', '')] = v
-	model.load_state_dict(new_s)
-
-	model = model.to(device)
-	return model.eval()
+    model = Wav2Lip()
+    print("Load checkpoint from: {}".format(path))
+    checkpoint = _load(path)
+    s = checkpoint["state_dict"]
+    new_s = {}
+    for k, v in s.items():
+    	new_s[k.replace('module.', '')] = v
+    model.load_state_dict(new_s)
+    model.half()
+    model = model.to(device)
+    # Only works for cuda capabilities 7.0+; Does not work with GTX 1080 or 1080 Ti...
+    # model = torch.compile(model)
+    return model.eval()
 
 def load_avatar(avatar_id):
     avatar_path = f"./data/avatars/{avatar_id}"
@@ -91,7 +93,8 @@ def warm_up(batch_size,model,modelres):
     print('warmup model...')
     img_batch = torch.ones(batch_size, 6, modelres, modelres).to(device)
     mel_batch = torch.ones(batch_size, 1, 80, 16).to(device)
-    model(mel_batch, img_batch)
+    with torch.autocast(device_type=device, dtype=torch.float16):
+        model(mel_batch, img_batch)
 
 def read_imgs(img_list):
     frames = []
@@ -163,7 +166,8 @@ def inference(quit_event,batch_size,face_list_cycle,audio_feat_queue,audio_out_q
             mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
 
             with torch.no_grad():
-                pred = model(mel_batch, img_batch)
+                with torch.autocast(device_type=device, dtype=torch.float16):
+                    pred = model(mel_batch, img_batch)
             pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
 
             counttime += (time.perf_counter() - t)

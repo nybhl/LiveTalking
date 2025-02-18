@@ -30,9 +30,12 @@ GoogleDriver <https://drive.google.com/drive/folders/1FOC_MD6wdogyyX_7V1d4NDIO7P
 Copy wav2lip384.pth to models/, and rename checkpoint to wav2lip.pth;  
 Copy wav2lip384_avatar1.tar.gz under data/avatars
 - Run  
-python app.py --transport webrtc --model wav2lip --avatar_id wav2lip384_avatar1  
+python app.py --transport webrtc --model wav2lip --avatar_id wav2lip384_avatar1 --batch_size 8
 Use browser to open http://serverip:8010/webrtcapi.html
 Click start.
+
+## Notes
+Tested on Nvidia GTX 1080 wave2lip uses 4.5GB VRAM in total with batch size 8. Batch size of 16 does not fit in 8GB VRAM
 
 
 # MuseTalk
