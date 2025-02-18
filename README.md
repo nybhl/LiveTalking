@@ -37,6 +37,12 @@ Click start.
 ## Notes
 Tested on Nvidia GTX 1080 wave2lip uses 4.5GB VRAM in total with batch size 8. Batch size of 16 does not fit in 8GB VRAM
 
+## Experiments
+```
+(wav2lip) root@DESKTOP-UJGQNR3: conda install jupyter
+(wav2lip) root@DESKTOP-UJGQNR3: jupyter notebook
+```
+Open wave2lip_experiments.ipynb and experiment pre-processing and post-processing.
 
 # MuseTalk
 ## 1. Installation
