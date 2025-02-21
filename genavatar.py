@@ -18,7 +18,7 @@ parser.add_argument('--avatar_id', default='wav2lip_avatar1', type=str)
 parser.add_argument('--video_path', default='', type=str)
 parser.add_argument('--nosmooth', default=False, action='store_true',
 					help='Prevent smoothing face detections over a short temporal window')
-parser.add_argument('--pads', nargs='+', type=int, default=[0, 40, 0, 0], 
+parser.add_argument('--pads', nargs='+', type=int, default=[0, 0, 0, 0], 
 					help='Padding (top, bottom, left, right). Please adjust to include chin at least')
 parser.add_argument('--face_det_batch_size', type=int, 
 					help='Batch size for face detection', default=1)
