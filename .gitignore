@@ -17,3 +17,4 @@ pretrained
 workspace/log_ngp.txt
 .idea
 /results
+/models

@@ -42,6 +42,7 @@ from basereal import BaseReal
 #from imgcache import ImgCache
 
 from tqdm import tqdm
+from skimage.exposure import match_histograms
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} for inference.'.format(device))
@@ -240,6 +241,8 @@ class LipReal(BaseReal):
                 bbox = self.coord_list_cycle[idx]
                 combine_frame = copy.deepcopy(self.frame_list_cycle[idx])
                 original_face = self.face_list_cycle[idx]
+
+                res_frame[:,:,2] = match_histograms(res_frame[:,:,2], original_face[:,:,2], channel_axis=-1)
 
 
                 mask = self.mask_list_cycle[idx]
