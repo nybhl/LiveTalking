@@ -1,3 +1,5 @@
+# Wav2lip genavatar
+
 from os import listdir, path
 import numpy as np
 import scipy, cv2, os, sys, argparse
@@ -6,8 +8,9 @@ from tqdm import tqdm
 from glob import glob
 import torch
 import pickle
-import face_detection
-
+import wav2lip.face_detection as face_detection
+from musetalk.utils.face_parsing import FaceParsing
+from PIL import Image
 
 parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
 parser.add_argument('--img_size', default=96, type=int)
@@ -15,7 +18,7 @@ parser.add_argument('--avatar_id', default='wav2lip_avatar1', type=str)
 parser.add_argument('--video_path', default='', type=str)
 parser.add_argument('--nosmooth', default=False, action='store_true',
 					help='Prevent smoothing face detections over a short temporal window')
-parser.add_argument('--pads', nargs='+', type=int, default=[0, 0, 0, 0], 
+parser.add_argument('--pads', nargs='+', type=int, default=[0, 10, 0, 0], 
 					help='Padding (top, bottom, left, right). Please adjust to include chin at least')
 parser.add_argument('--face_det_batch_size', type=int, 
 					help='Batch size for face detection', default=1)
@@ -23,6 +26,19 @@ args = parser.parse_args()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} for inference.'.format(device))
+
+fp = FaceParsing(os.path.abspath('./models/face-parse-bisent/resnet18-5c106cde.pth'),
+                 os.path.abspath('./models/face-parse-bisent/79999_iter.pth'))
+
+
+def face_seg(image):
+    seg_image = fp(image)
+    if seg_image is None:
+        print("error, no person_segment")
+        return None
+
+    seg_image = seg_image.resize(image.size)
+    return seg_image
 
 def osmakedirs(path_list):
     for path in path_list:
@@ -103,8 +119,9 @@ if __name__ == "__main__":
     avatar_path = f"./results/avatars/{args.avatar_id}"
     full_imgs_path = f"{avatar_path}/full_imgs" 
     face_imgs_path = f"{avatar_path}/face_imgs" 
+    mask_imgs_path = f"{avatar_path}/mask_imgs"
     coords_path = f"{avatar_path}/coords.pkl"
-    osmakedirs([avatar_path,full_imgs_path,face_imgs_path])
+    osmakedirs([avatar_path,full_imgs_path,face_imgs_path,mask_imgs_path])
     print(args)
 
     #if os.path.isfile(args.video_path):
@@ -115,12 +132,18 @@ if __name__ == "__main__":
     face_det_results = face_detect(frames) 
     coord_list = []
     idx = 0
-    for frame,coords in face_det_results:        
-        #x1, y1, x2, y2 = bbox
-        resized_crop_frame = cv2.resize(frame,(args.img_size, args.img_size)) #,interpolation = cv2.INTER_LANCZOS4)
-        cv2.imwrite(f"{face_imgs_path}/{idx:08d}.png", resized_crop_frame)
-        coord_list.append(coords)
-        idx = idx + 1
+    for frame,coords in face_det_results:
+    	body = Image.fromarray(frame[:, :, ::-1])
+    	mask_image = face_seg(body)
+    	mask_image=np.array(mask_image)
+    	mask_image[:mask_image.shape[0]//3*2:,:]=0
+    	blurred = cv2.GaussianBlur(np.array(mask_image), (15, 15), 0)
+    	resized_mask = cv2.resize(blurred,(args.img_size, args.img_size)) #,interpolation = cv2.INTER_LANCZOS4)
+    	resized_crop_frame = cv2.resize(frame,(args.img_size, args.img_size)) #,interpolation = cv2.INTER_LANCZOS4)
+    	cv2.imwrite(f"{face_imgs_path}/{idx:08d}.png", resized_crop_frame)
+    	cv2.imwrite(f"{mask_imgs_path}/{idx:08d}.png", resized_mask)
+    	coord_list.append(coords)
+    	idx = idx + 1
 	
     with open(coords_path, 'wb') as f:
         pickle.dump(coord_list, f)

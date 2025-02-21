@@ -73,6 +73,7 @@ def load_avatar(avatar_id):
     avatar_path = f"./data/avatars/{avatar_id}"
     full_imgs_path = f"{avatar_path}/full_imgs" 
     face_imgs_path = f"{avatar_path}/face_imgs" 
+    mask_imgs_path = f"{avatar_path}/mask_imgs"
     coords_path = f"{avatar_path}/coords.pkl"
     
     with open(coords_path, 'rb') as f:
@@ -85,7 +86,12 @@ def load_avatar(avatar_id):
     input_face_list = sorted(input_face_list, key=lambda x: int(os.path.splitext(os.path.basename(x))[0]))
     face_list_cycle = read_imgs(input_face_list)
 
-    return frame_list_cycle,face_list_cycle,coord_list_cycle
+    input_mask_list = glob.glob(os.path.join(mask_imgs_path, '*.[jpJP][pnPN]*[gG]'))
+    input_mask_list = sorted(input_mask_list, key=lambda x: int(os.path.splitext(os.path.basename(x))[0]))
+    mask_list_cycle = read_imgs(input_mask_list)
+
+
+    return frame_list_cycle,face_list_cycle,coord_list_cycle,mask_list_cycle
 
 @torch.no_grad()
 def warm_up(batch_size,model,modelres):
@@ -199,7 +205,7 @@ class LipReal(BaseReal):
         self.res_frame_queue = Queue(self.batch_size*2)  #mp.Queue
         #self.__loadavatar()
         self.model = model
-        self.frame_list_cycle,self.face_list_cycle,self.coord_list_cycle = avatar
+        self.frame_list_cycle,self.face_list_cycle,self.coord_list_cycle, self.mask_list_cycle = avatar
 
         self.asr = LipASR(opt,self)
         self.asr.warm_up()
@@ -233,10 +239,26 @@ class LipReal(BaseReal):
                 self.speaking = True
                 bbox = self.coord_list_cycle[idx]
                 combine_frame = copy.deepcopy(self.frame_list_cycle[idx])
+                original_face = self.face_list_cycle[idx]
+
+
+                mask = self.mask_list_cycle[idx]
+                new_mask = mask[:,:,0].astype(np.float32) / 255.0
+                # print(new_mask.dtype)
+                inverse = 1.0-new_mask
+                res_frame = res_frame.astype(np.uint8)
+                # print(inverse.dtype)
+                # print(res_frame.dtype)
+                # print(original_face.dtype)
+                # print(res_frame.shape)
+                # print(original_face.shape)
+                # print(mask.shape)
+                new_face = cv2.blendLinear(res_frame,original_face,new_mask,inverse)
+
                 #combine_frame = copy.deepcopy(self.imagecache.get_img(idx))
                 y1, y2, x1, x2 = bbox
                 try:
-                    res_frame = cv2.resize(res_frame.astype(np.uint8),(x2-x1,y2-y1))
+                    res_frame = cv2.resize(new_face.astype(np.uint8),(x2-x1,y2-y1))
                 except:
                     continue
                 #combine_frame = get_image(ori_frame,res_frame,bbox)

@@ -16,3 +16,4 @@ pretrained
 .DS_Store
 workspace/log_ngp.txt
 .idea
+/results
